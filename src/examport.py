@@ -1,7 +1,7 @@
 import json
 from question import Question, Exam
 
-path_to_exams: str = "/home/glbondiii/Programming_Projects/examport/exams"
+path_to_exams: str = "/home/glbondiii/Programming_Projects/studybinder/exams"
 question_types: list[str] = ["Free Response", "Fill-in-the-Blank", "Multiple Choice", "True/False"]
 
 def main():
@@ -62,15 +62,16 @@ def getExamQuestions(semester: str, unit: int) -> list[Question]:
         explanation = input("Question Explanation: ")
         
         if (type != question_types[0]):
-            answer = input("Question Answer: ")
-
             if (type == question_types[2]):
+                answer = input("Question Answer: ")
                 possibleAnswers.append(answer) 
                 for i in range(1, 4):
                     possibleAnswer = input(f"Possible Response {i}: ")
                     possibleAnswers.append(possibleAnswer)
 
             if (type == question_types[3]):
+                while (answer != "true" and answer != "false"):
+                    answer = input("Is the given true or false? (answer in lowercase) ")
                 possibleAnswers = ["true", "false"]
 
         question: Question = Question(examId, examNum, type, given, explanation, answer, 
