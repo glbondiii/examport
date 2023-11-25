@@ -2,7 +2,7 @@ import json
 from question import Question, Exam
 
 path_to_exams: str = "/home/glbondiii/Programming_Projects/studybinder/exams"
-question_types: list[str] = ["Free Response", "Fill-in-the-Blank", "Multiple Choice", "True/False"]
+question_types: list[str] = ["Free Response", "Fill in the Blank", "Multiple Choice", "True/False"]
 
 def main():
     print("ExamPort for StudyBinder (in JSON format)\n")
