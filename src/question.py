@@ -2,16 +2,13 @@ from dataclasses import dataclass
 
 @dataclass
 class Question:
-    examId: str
-    examNum: int
+    examSemester: str
+    examUnit: int
+    questionNum: int
     type: str
     given: str
     explanation: str
     answer: str
-    possibleAnswers: list[str]
+    possibleAnswers: str
+    usersAnswered: str
 
-@dataclass
-class Exam:
-    semester: str
-    unit: int
-    questions: list[Question]

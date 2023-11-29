@@ -1,20 +1,24 @@
-import json
-from question import Question, Exam
+import os
+import sqlite3
+from question import Question
 
-path_to_exams: str = "/home/glbondiii/Programming_Projects/studybinder/exams"
-question_types: list[str] = ["Free Response", "Fill in the Blank", "Multiple Choice", "True/False"]
+path_to_databases: str = "/home/glbondiii/Programming_Projects/examport/databases"
+question_types: list[str] = ["Free Response", "Short Answer", "Multiple Choice", "True/False"]
 
 def main():
-    print("ExamPort for StudyBinder (in JSON format)\n")
-    exam: Exam = getExamDetails()
-    examDict: dict = getExamDict(exam)
-    print(examDict)
-    examJson: str = json.dumps(examDict)
-    file = open(f"{path_to_exams}/{exam.semester}Unit{exam.unit}.json".replace(" ", ""), "w")
-    file.write(examJson)
-    print(f"Written to {path_to_exams}/{exam.semester.replace(' ', '')}Unit{exam.unit}.json")
+    print("ExamPort for StudyBinder (into SQL format)\n")
+    courseID: str = input("Enter the course ID for your exam: ")
+    db: sqlite3.Connection = connectToDatabase(courseID)
+    questions: list[Question] = getExamQuestions()
+    addQuestionsToDatabase(questions, db)
+    if db:
+        db.close()
 
-def getExamDetails() -> Exam:
+def getExamQuestions() -> list[Question]:
+    complete: bool = False
+    questions: list[Question] = []
+    index: int = 1
+
     semester: str = input("Exam semester: ")
 
     unit: int = 0
@@ -26,32 +30,22 @@ def getExamDetails() -> Exam:
         except ValueError:
             print("Cannot input a string or decimal")
 
-    questions: list[Question] = getExamQuestions(semester, unit)
-    
-    return Exam(semester, unit, questions) 
-
-def getExamQuestions(semester: str, unit: int) -> list[Question]:
-    complete: bool = False
-    questions: list[Question] = []
-    index: int = 1
-
     while (complete == False):
-        examId: str = f"{semester}, Unit {unit}" 
-        examNum: int = index
+        questionNum: int = index
         type: str = ""
         given: str = ""
         explanation: str = ""
         answer: str = ""
-        possibleAnswers: list[str] = []
+        possibleAnswers: str = ""
 
-        print(f"Question {examNum}:")
+        print(f"Question {questionNum}:")
         
         typeIndex: int = 0
         while (typeIndex <= 0):
             try:
                 printQuestionTypes()
-                print(f"\nEnter the index of the type you want question {examNum} to be")
-                typeIndex: int = int(input(f"Question {examNum} Type: "))
+                print(f"\nEnter the index of the type you want question {questionNum} to be")
+                typeIndex: int = int(input(f"Question {questionNum} Type: "))
                 if (typeIndex <= 0):
                     print("Input cannot be negative or zero")
             except ValueError:
@@ -59,28 +53,34 @@ def getExamQuestions(semester: str, unit: int) -> list[Question]:
 
         type = question_types[typeIndex-1]
         given = input("Question Given: ")
+        print()
         explanation = input("Question Explanation: ")
+        print()
         
         if (type != question_types[0]):
             if (type == question_types[2]):
                 answer = input("Question Answer: ")
-                possibleAnswers.append(answer) 
+                possibleAnswers = possibleAnswers + f"{answer}"
                 for i in range(1, 4):
                     possibleAnswer = input(f"Possible Response {i}: ")
-                    possibleAnswers.append(possibleAnswer)
+                    possibleAnswers = possibleAnswers + f",{possibleAnswer}"
 
-            if (type == question_types[3]):
+            elif (type == question_types[3]):
                 while (answer != "true" and answer != "false"):
                     answer = input("Is the given true or false? (answer in lowercase) ")
-                possibleAnswers = ["true", "false"]
+                possibleAnswers = "true,false"
 
-        question: Question = Question(examId, examNum, type, given, explanation, answer, 
-                                      possibleAnswers)
+            else: 
+                answer = input("Question Answer: ")
+
+        question: Question = Question(semester, unit, questionNum, type, given, explanation, answer, 
+                                      possibleAnswers, "")
 
         questions.append(question)
         index+=1
 
         done: str = input("Are you done inputting questions? ")
+
         if (done.startswith('y') or done.startswith('Y')):
             complete = True
 
@@ -94,18 +94,43 @@ def printQuestionTypes():
         print(f"{index}. {question_type}")
         index+=1
 
-def getExamDict(exam: Exam) -> dict:
-    examDict: dict = exam.__dict__
+def connectToDatabase(courseID: str) -> sqlite3.Connection:
+    newDB: bool = False
+    dbPath = f"{path_to_databases}/{courseID}.db"
 
-    questionsJson: list[dict] = []
+    if (not os.path.isfile(dbPath)):
+        newDB = True
 
-    for question in exam.questions:
-        questionsJson.append(question.__dict__)
+    print(newDB)
+    db: sqlite3.Connection = sqlite3.connect(dbPath)
 
-    examDict["questions"] = questionsJson
+    if (newDB):
+        db.execute("""CREATE TABLE users (
+            name TEXT,
+            admin INTEGER,
+            excludeAnswered INTEGER
+            )""") # Create users table
 
-    return examDict
+        db.execute("""CREATE TABLE questions (
+            examSemester TEXT,
+            examUnit INTEGER,
+            questionNum INTEGER,
+            type TEXT,
+            given TEXT,
+            explanation TEXT,
+            answer TEXT,
+            possibleAnswers TEXT,
+            usersAnswered TEXT
+            )""") # Create questions table
 
+    return db
+
+def addQuestionsToDatabase(questions: list[Question], db: sqlite3.Connection):
+    for question in questions:
+        questionDict: dict = question.__dict__
+        print(tuple(questionDict.values()))
+        db.execute("INSERT INTO questions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                                     tuple(questionDict.values()))
 
 if __name__ == "__main__":
     main()
