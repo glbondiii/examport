@@ -2,13 +2,13 @@ import os
 import sqlite3
 from question import Question
 
-path_to_databases: str = "/path/to/examport/databases"
 question_types: list[str] = ["Free Response", "Short Answer", "Multiple Choice", "True/False"]
 
 def main():
     print("ExamPort for StudyBinder (into SQL format)\n")
+    path_to_databases: str = input("Enter the absolute path where your databases are: ")
     courseID: str = input("Enter the course ID for your exam: ")
-    db: sqlite3.Connection = connectToDatabase(courseID)
+    db: sqlite3.Connection = connectToDatabase(path_to_databases, courseID)
     questions: list[Question] = getExamQuestions()
     addQuestionsToDatabase(questions, db)
     if db:
@@ -17,15 +17,23 @@ def main():
 def getExamQuestions() -> list[Question]:
     complete: bool = False
     questions: list[Question] = []
-    index: int = 1
+    index: int = -1
 
     semester: str = input("Exam semester: ")
 
     unit: int = 0
     while (unit <= 0):
         try:
-            unit: int = int(input("Exam unit: "))
+            unit = int(input("Exam unit: "))
             if (unit <= 0):
+                print("Input cannot be negative or zero")
+        except ValueError:
+            print("Cannot input a string or decimal")
+
+    while (index <= 0):
+        try:
+            index = int(input("Start at question: "))
+            if (index <= 0):
                 print("Input cannot be negative or zero")
         except ValueError:
             print("Cannot input a string or decimal")
@@ -94,7 +102,7 @@ def printQuestionTypes():
         print(f"{index}. {question_type}")
         index+=1
 
-def connectToDatabase(courseID: str) -> sqlite3.Connection:
+def connectToDatabase(path_to_databases: str, courseID: str) -> sqlite3.Connection:
     newDB: bool = False
     dbPath = f"{path_to_databases}/{courseID}.db"
 
