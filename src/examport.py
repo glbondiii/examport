@@ -2,7 +2,7 @@ import os
 import sqlite3
 from question import Question
 
-path_to_databases: str = "/home/glbondiii/Programming_Projects/examport/databases"
+path_to_databases: str = "/path/to/examport/databases"
 question_types: list[str] = ["Free Response", "Short Answer", "Multiple Choice", "True/False"]
 
 def main():
@@ -129,8 +129,11 @@ def addQuestionsToDatabase(questions: list[Question], db: sqlite3.Connection):
     for question in questions:
         questionDict: dict = question.__dict__
         print(tuple(questionDict.values()))
-        db.execute("INSERT INTO questions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                                     tuple(questionDict.values()))
+        db.execute("""INSERT INTO questions (examSemester, examUnit, questionNum, type, given, 
+                                             explanation, answer, possibleAnswers, usersAnswered) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                   tuple(questionDict.values()))
+        db.commit()
 
 if __name__ == "__main__":
     main()
