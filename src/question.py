@@ -12,3 +12,4 @@ class Question:
     possibleAnswers: str
     usersAnswered: str
 
+question_types: list[str] = ["Free Response", "Short Answer", "Multiple Choice", "True/False"]
