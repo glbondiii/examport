@@ -44,10 +44,15 @@ def addQuestionsToDatabase(questions: list[Question], db: sqlite3.Connection):
                    tuple(questionDict.values()))
         db.commit()
 
-def getRandomQuestion(db: sqlite3.Connection) -> Question:
+def getRandomQuestion(db: sqlite3.Connection, type: int = -1) -> Question:
     questions: list[Question] = []
 
-    questionSQL: list = db.execute("SELECT * from questions ORDER BY random()").fetchall()
+    questionSQL: list
+    if (type == -1):
+        questionSQL = db.execute("SELECT * from questions ORDER BY random()").fetchall()
+    else:
+        questionSQL = db.execute(f"""SELECT * from questions WHERE type = "{question_types[type]}"
+                                 ORDER BY random()""").fetchall()
 
     for question in questionSQL:
         newQuestion: Question = Question(question[0], question[1], question[2], question[3],

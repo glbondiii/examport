@@ -25,3 +25,8 @@ def getRandomQuestion():
     randQuestion: Question = sqldb.getRandomQuestion(db)
     return jsonify(randQuestion)
 
+@app.route("/select/random/<questionTypeStr>")
+def getRandomQuestionType(questionTypeStr: str):
+    questionType: int = int(questionTypeStr)
+    randQuestion: Question = sqldb.getRandomQuestion(db, questionType)
+    return jsonify(randQuestion)
