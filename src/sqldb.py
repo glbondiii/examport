@@ -1,10 +1,10 @@
 import os
 import sqlite3
-from question import Question
+from question import Question, question_types
 
-def connectToDatabase(path_to_databases: str, courseID: str) -> sqlite3.Connection:
+def connectToDatabase(path: str, courseID: str) -> sqlite3.Connection:
     newDB: bool = False
-    dbPath = f"{path_to_databases}/{courseID}.db"
+    dbPath = f"{path}/{courseID}.db"
 
     if (not os.path.isfile(dbPath)):
         newDB = True
@@ -43,3 +43,25 @@ def addQuestionsToDatabase(questions: list[Question], db: sqlite3.Connection):
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
                    tuple(questionDict.values()))
         db.commit()
+
+def getRandomQuestion(db: sqlite3.Connection, type: int = -1) -> Question:
+    questions: list[Question] = []
+
+    questionSQL: list
+    if (type == -1):
+        questionSQL = db.execute("SELECT * from questions ORDER BY random()").fetchall()
+    else:
+        questionSQL = db.execute(f"""SELECT * from questions WHERE type = "{question_types[type]}"
+                                 ORDER BY random()""").fetchall()
+
+    for question in questionSQL:
+        newQuestion: Question = Question(question[0], question[1], question[2], question[3],
+                                         question[4], question[5], question[6], question[7],
+                                         question[8])
+        questions.append(newQuestion)
+
+    index: int = 0
+    # Increment index until reach last question or question that hasnt been answered yet
+
+    return questions[index]
+

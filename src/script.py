@@ -1,6 +1,18 @@
-from question import Question
+import sqlite3
+import sqldb
+from question import Question, question_types
 
 question_types: list[str] = ["Free Response", "Short Answer", "Multiple Choice", "True/False"]
+
+def main():
+    print("ExamPort Script for StudyBinder (into SQL format)\n")
+    path_to_databases: str = input("Enter the absolute path where your databases are: ")
+    courseID: str = input("Enter the course ID for your exam: ")
+    db: sqlite3.Connection = sqldb.connectToDatabase(path_to_databases, courseID)
+    questions: list[Question] = getExamQuestions()
+    sqldb.addQuestionsToDatabase(questions, db)
+    db.close()
+
 
 def getExamQuestions() -> list[Question]:
     complete: bool = False
@@ -89,3 +101,6 @@ def printQuestionTypes():
     for question_type in question_types: 
         print(f"{index}. {question_type}")
         index+=1
+
+if __name__ == "__main__":
+    main()
