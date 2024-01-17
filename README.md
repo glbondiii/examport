@@ -1,2 +1,3 @@
 # examport
-Companion Python script to StudyBinder designed to streamline exam question transcription
+Companion Python program that acts as a server and a database management tool for StudyBinder
+
